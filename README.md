@@ -85,7 +85,7 @@ The generated all-in-one PowerShell script includes the following resources
  * Only global variables of type "string" are supported
  * Only script variable mappings of type "string" are supported
  * Powershel script template (use template instead of inline Powershell script) is not supported
- * Delegate Form Access Groups are not exported but are hardcoded in the generated script (you need to update them manually)
+ * Self service Product Managed By Groups are not exported but are hardcoded in the generated script (you need to update them manually)
 
 # HelloID Docs
 The official HelloID documentation can be found at: https://docs.helloid.com/
