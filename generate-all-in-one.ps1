@@ -6,9 +6,9 @@ $script:PortalBaseUrl = "https://CUSTOMER.helloid.com"
 $apiKey = "API_KEY"
 $apiSecret = "API_SECRET"
 $selfserviceProductName = "<Selfservice Product NAME>" #Only unique names are supported. Note that, in large environments this won't improve the performance 
-$useManualSelfserviceProductCategories = $true #$true means use manual categories listed below. $false means receive current categories from SelfserviceProduct
-$manualSelfserviceProductCategories = @("Active Directory", "User Management") #Only unique names are supported. Categories will be created if not exists
-$defaultSelfserviceProductManagedByGroupName = "HID_administrators" #Only single value supported. Group must exist within HelloID!
+$useManualSelfserviceProductCategories = $false #$true means use manual categories listed below. $false means receive current categories from SelfserviceProduct
+$manualSelfserviceProductCategories = @() #Only unique names are supported. Categories will be created if not exists
+$defaultSelfserviceProductManagedByGroupName = "" #Only single value supported. Group must exist within HelloID!
 $rootExportFolder = "C:\HelloID\Selfservice Products" #example: C:\HelloID\Selfservice Products
 
 # Selfservice Product export folders
@@ -80,7 +80,19 @@ function Get-HelloIDData([string]$endpointUri) {
 
 #Selfservice Product
 $SelfserviceProductTemp = (Get-HelloIDData -endpointUri "/api/v1/selfservice/products") | Where-Object { $_.name -eq $selfserviceProductName }
+if ([string]::IsNullOrEmpty($SelfserviceProductTemp.selfServiceProductGUID)) {
+    Write-Error "Failed to load Selfservice Product called: $selfserviceProductName";
+    exit;
+}
+elseif ($SelfserviceProductTemp.selfServiceProductGUID.count -gt 1) {
+    Write-Error "Multiple Selfservice Product called: $($selfserviceProductName). Please make sure this is unique";
+    exit;  
+}
 $SelfserviceProduct = (Get-HelloIDData -endpointUri "/api/v1/selfservice/products/$($SelfserviceProductTemp.selfServiceProductGUID)")
+if ([string]::IsNullOrEmpty($SelfserviceProduct.selfServiceProductGUID)) {
+    Write-Error "Failed to load Selfservice Product called: $selfserviceProductName";
+    exit;
+}
 
 #Selfservice Product categories
 if (-not $useManualSelfserviceProductCategories -eq $true) {
@@ -735,12 +747,23 @@ if ($null -ne $SelfserviceProduct.formName) {
 $PowershellScript += "<# Begin: Selfservice Product Managed By Group and Categories #>`n"
 $PowershellScript += @'
 try {
-    $uri = ($script:PortalBaseUrl +"api/v1/groups/$SelfserviceProductManagedByGroupName")
-    $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false
-    $selfserviceProductManagedByGroupGuid = $response.groupGuid
-    
-    Write-Information "HelloID (managed by)group '$SelfserviceProductManagedByGroupName' successfully found$(if ($script:debugLogging -eq $true) { ": " + $selfserviceProductManagedByGroupGuid })"
-} catch {
+    if ([string]::IsNullOrEmpty($SelfserviceProductManagedByGroupName)) {
+        Write-Warning "No HelloID (managed by)group name specified. Skipping the group"
+    }
+    else {
+        $uri = ($script:PortalBaseUrl + "api/v1/groups/$SelfserviceProductManagedByGroupName")
+        $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false
+        $selfserviceProductManagedByGroupGuid = $response.groupGuid
+
+        if ($selfserviceProductManagedByGroupGuid.count -eq 1) {
+            Write-Information "HelloID (managed by)group '$SelfserviceProductManagedByGroupName' successfully found$(if ($script:debugLogging -eq $true) { ": " + $selfserviceProductManagedByGroupGuid })"
+        }
+        elseif ($selfserviceProductManagedByGroupGuid.count -gt 1) {
+            Write-Error "Multiple HelloID (managed by)groups found with name '$SelfserviceProductManagedByGroupName'. Please make sure this is unique"
+        }
+    }
+}
+catch {
     Write-Error "HelloID (managed by)group '$SelfserviceProductManagedByGroupName', message: $_"
 }
 
@@ -804,5 +827,4 @@ $PowershellScript += "`tActions                         = `$actions `n"
 $PowershellScript += "} `n"
 $PowershellScript += "Invoke-HelloIDSelfserviceProduct @SelfserviceProductParams -returnObject ([Ref]`$SelfserviceProductRef) `n"
 $PowershellScript += "<# End: Selfservice Product #>`n"
-
 set-content -LiteralPath "$allInOneFolder\createform.ps1" -Value $PowershellScript -Force
