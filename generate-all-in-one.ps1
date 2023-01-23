@@ -572,21 +572,21 @@ function Invoke-HelloIDSelfserviceProduct {
                 foreach($var in $action.variables){
                     # If action is Custom PowerShell Script, the variables (except the ones in the if statement below) need to be set to: isScriptVariable = $true
                     if( ($action.automationStoreTaskId -eq "4d20769f-80f1-48f6-acd1-33e642aa211d") -and ($var.name -ne "powerShellScript" -and $var.name -ne "powerShellScriptGuid" -and $var.name -ne "useTemplate") ){
-                        $actionVariables += New-Object psobject -Property @{
+                        $actionVariables += [psobject]::new(@{
                             name = $var.name
                             value = $var.value
                             typeConstraint = $var.typeConstraint
                             secure = $var.secret
                             isScriptVariable = $true
-                        }
+                        })
                     }else{
-                        $actionVariables += New-Object psobject -Property @{
+                        $actionVariables += [psobject]::new(@{
                             name = $var.name
                             value = $var.value
                             typeConstraint = $var.typeConstraint
                             secure = $var.secret
-                            isScriptVariable = $var.isScriptVariable
-                        }
+                            isScriptVariable = $true
+                        })
                     }
                 }
 
@@ -608,13 +608,13 @@ function Invoke-HelloIDSelfserviceProduct {
                     foreach($var in $action.variables){
                         # If action is Custom PowerShell Script, the variables (except the ones in the if statement below) need to be set to: isScriptVariable = $true
                         if($var.name -ne "powerShellScript" -and $var.name -ne "powerShellScriptGuid" -and $var.name -ne "useTemplate"){
-                            $actionVariables += New-Object psobject -Property @{
+                            $actionVariables += [psobject]::new(@{
                                 name = $var.name
                                 value = $var.value
                                 typeConstraint = $var.typeConstraint
                                 secure = $var.secret
                                 isScriptVariable = $true
-                            }
+                            })
                         }
                     }
 
