@@ -585,7 +585,7 @@ function Invoke-HelloIDSelfserviceProduct {
                             value = $var.value
                             typeConstraint = $var.typeConstraint
                             secure = $var.secret
-                            isScriptVariable = $true
+                            isScriptVariable = $var.isScriptVariable
                         })
                     }
                 }
