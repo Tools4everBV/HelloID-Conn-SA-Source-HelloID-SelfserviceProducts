@@ -546,7 +546,6 @@ function Invoke-HelloIDSelfserviceProduct {
                 hasTimeLimit                  = $HasTimeLimit;
                 limitType                     = $LimitType;
                 managerCanOverrideDuration    = $ManagerCanOverrideDuration;
-                ownershipMaxDurationInMinutes = $OwnershipMaxDurationInMinutes;
                 hasRiskFactor                 = $HasRiskFactor;
                 riskFactor                    = $RiskFactor
                 maxCount                      = $MaxCount
@@ -554,6 +553,11 @@ function Invoke-HelloIDSelfserviceProduct {
                 price                         = $Price
                 formName                      = $DynamicFormName
                 approvalWorkflowName          = $ApprovalWorkflowName
+            }
+
+            # Only add OwnershipMaxDurationInMinutes if it doesn't equal '0', as this cannot be 0 for the API calls.
+            if ($OwnershipMaxDurationInMinutes -ne 0) { 
+                [void]$body.Add('ownershipMaxDurationInMinutes',$OwnershipMaxDurationInMinutes)
             }
             
             $body = ConvertTo-Json -InputObject $body
