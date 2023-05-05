@@ -493,7 +493,7 @@ function Invoke-HelloIDDynamicForm {
 function Invoke-HelloIDSelfserviceProduct {
     param(
         [parameter(Mandatory)][String]$selfserviceProductName,
-        [parameter(Mandatory)][String]$Description,
+        [parameter()][String]$Description,
         [parameter(Mandatory)][String]$Code,
         [parameter()][String][AllowEmptyString()]$ManagedByGroupGUID,
         [parameter()][AllowEmptyString()]$Categories,
